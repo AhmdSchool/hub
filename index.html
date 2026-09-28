@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>موسوعة القرآن — Quran Encyclopedia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ========== الأساسيات ========== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #fbbf24;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    body {
+      font-family: 'Amiri', serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: direction 0.3s;
+    }
+    body[dir="ltr"] { font-family: system-ui, -apple-system, sans-serif; }
+
+    /* ========== الشريط العلوي ========== */
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.5rem; background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { display: flex; align-items: center; gap: 0.6rem; font-size: 1.3rem; font-weight: 700; }
+    .logo-icon { color: var(--gold); font-size: 1.6rem; }
+    .topbar-actions { display: flex; gap: 0.5rem; }
+    .icon-btn {
+      background: var(--border); border: none; color: var(--text);
+      padding: 0.5rem 0.9rem; border-radius: 10px; cursor: pointer;
+      font-size: 1rem; transition: background 0.2s, transform 0.1s;
+    }
+    .icon-btn:hover { background: #475569; transform: scale(1.05); }
+    .icon-btn:active { transform: scale(0.95); }
+    .hidden { display: none !important; }
+
+    /* ========== التبويبات ========== */
+    .tabs {
+      display: flex; gap: 0.2rem; padding: 0.4rem 1rem;
+      background: var(--surface); overflow-x: auto;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: transparent; border: none; color: var(--muted);
+      padding: 0.7rem 1.2rem; border-radius: 10px 10px 0 0;
+      cursor: pointer; font-family: inherit; font-size: 1rem;
+      white-space: nowrap; transition: all 0.2s;
+    }
+    .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+    .tab-btn.active {
+      background: var(--bg); color: var(--gold);
+      border-bottom: 2px solid var(--gold); font-weight: 700;
+    }
+
+    /* ========== المحتوى ========== */
+    .content { padding: 1.5rem; max-width: 950px; margin: 0 auto; }
+    .tab-pane { display: none; animation: fadeIn 0.3s ease; }
+    .tab-pane.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ========== مربع البحث ========== */
+    .search-box { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+    .search-box input {
+      flex: 1; padding: 0.85rem 1.1rem; border-radius: 12px;
+      border: 2px solid var(--border); background: var(--surface);
+      color: var(--text); font-family: inherit; font-size: 1.1rem;
+      transition: border-color 0.2s;
+    }
+    .search-box input:focus { outline: none; border-color: var(--gold); }
+    .search-box button {
+      background: var(--gold); color: var(--bg); border: none;
+      padding: 0.85rem 1.6rem; border-radius: 12px; cursor: pointer;
+      font-weight: 700; font-family: inherit; font-size: 1rem;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .search-box button:hover { background: #f59e0b; }
+    .search-box button:active { transform: scale(0.97); }
+
+    /* ========== شريط الإحصائيات ========== */
+    .stats-bar {
+      background: var(--surface); padding: 0.9rem 1.2rem;
+      border-radius: 12px; margin-bottom: 1rem;
+      border-right: 4px solid var(--gold);
+      font-size: 1rem; color: var(--gold); font-weight: 700;
+    }
+
+    /* ========== نتائج البحث ========== */
+    .result-item {
+      background: var(--surface); border-radius: 14px;
+      padding: 1.1rem 1.3rem; margin-bottom: 0.8rem;
+      line-height: 2.1; font-size: 1.25rem;
+      border: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .result-item:hover { border-color: var(--border); }
+    .result-item .verse-ref {
+      display: block; font-size: 0.85rem; color: var(--muted);
+      margin-bottom: 0.4rem; font-family: system-ui, sans-serif;
+      font-weight: 600;
+    }
+    .highlight {
+      background: var(--gold); color: var(--bg);
+      padding: 0 3px; border-radius: 4px; font-weight: 700;
+    }
+
+    /* ========== الجذور ========== */
+    .roots-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; }
+    .root-card {
+      background: var(--surface); padding: 1rem; border-radius: 12px;
+      text-align: center; cursor: pointer; transition: transform 0.2s;
+      border: 1px solid var(--border);
+    }
+    .root-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+    .root-card .root-word { font-size: 1.5rem; color: var(--gold); font-weight: 700; }
+
+    /* ========== مكتبتي ========== */
+    .library-form { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.2rem; }
+    .library-form input {
+      padding: 0.75rem 1rem; border-radius: 10px; border: 2px solid var(--border);
+      background: var(--surface); color: var(--text); font-family: inherit; font-size: 1rem;
+    }
+    .library-form input:focus { outline: none; border-color: var(--gold); }
+    .library-form button {
+      align-self: flex-start; background: var(--gold); color: var(--bg);
+      border: none; padding: 0.7rem 1.5rem; border-radius: 10px;
+      cursor: pointer; font-weight: 700; font-family: inherit;
+    }
+    .books-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem; margin-top: 1rem;
+    }
+    .book-card {
+      background: var(--surface); border-radius: 14px; padding: 1.2rem 0.8rem;
+      text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s;
+      border: 1px solid var(--border);
+    }
+    .book-card:hover { transform: translateY(-4px); border-color: var(--gold); }
+    .book-card .book-icon { font-size: 2.8rem; margin-bottom: 0.5rem; }
+
+    /* ========== عارض الكتاب ========== */
+    .book-viewer {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+      z-index: 100; display: flex; flex-direction: column;
+    }
+    .viewer-header {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.5rem; background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .viewer-header .close-btn {
+      background: #dc2626; color: white; border: none;
+      width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+      font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+    }
+    .viewer-body { flex: 1; padding: 1rem; }
+    .viewer-body iframe { width: 100%; height: 100%; border: none; border-radius: 10px; background: white; }
+
+    /* ========== خطتي ========== */
+    .plan-setup {
+      background: var(--surface); padding: 1.5rem; border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    .plan-setup h3 { margin-bottom: 1rem; color: var(--gold); }
+    .plan-options { display: flex; gap: 1.5rem; margin: 1rem 0; }
+    .plan-options label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+    .plan-options input[type="radio"] { accent-color: var(--gold); width: 18px; height: 18px; }
+    .plan-quantity { display: flex; align-items: center; gap: 0.6rem; margin: 1rem 0; }
+    .plan-quantity input {
+      width: 80px; padding: 0.5rem; border-radius: 8px;
+      border: 2px solid var(--border); background: var(--bg);
+      color: var(--text); text-align: center; font-family: inherit; font-size: 1rem;
+    }
+    .plan-quantity input:focus { outline: none; border-color: var(--gold); }
+    .plan-setup button {
+      background: var(--gold); color: var(--bg); border: none;
+      padding: 0.8rem 2rem; border-radius: 10px; cursor: pointer;
+      font-weight: 700; font-family: inherit; font-size: 1rem; margin-top: 0.5rem;
+    }
+    .plan-progress { margin-top: 1.5rem; }
+    .progress-bar {
+      background: var(--border); height: 14px; border-radius: 7px;
+      overflow: hidden; margin-bottom: 0.6rem;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--gold), #f59e0b);
+      width: 0%; transition: width 0.5s ease; border-radius: 7px;
+    }
+
+    /* ========== لوحة التحكم ========== */
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      display: flex; align-items: center; justify-content: center; z-index: 200;
+    }
+    .modal-content {
+      background: var(--surface); padding: 2rem; border-radius: 20px;
+      min-width: 320px; text-align: center; border: 1px solid var(--border);
+    }
+    .modal-content h2 { color: var(--gold); margin-bottom: 1.2rem; }
+    .modal-content .stat-row {
+      display: flex; justify-content: space-between; padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border); font-size: 1.05rem;
+    }
+    .modal-content .stat-row strong { color: var(--gold); }
+    .modal-content button {
+      margin-top: 1.5rem; padding: 0.6rem 2rem; border-radius: 10px;
+      border: none; background: var(--gold); color: var(--bg);
+      font-weight: 700; cursor: pointer; font-family: inherit; font-size: 1rem;
+    }
+
+    /* ========== placeholder ========== */
+    .placeholder-text { color: var(--muted); text-align: center; padding: 2rem; font-size: 1rem; }
+
+    /* ========== استجابة ========== */
+    @media (max-width: 600px) {
+      .content { padding: 1rem; }
+      .result-item { font-size: 1.1rem; padding: 0.9rem; }
+      .search-box { flex-direction: column; }
+      .search-box button { width: 100%; }
+      .plan-options { flex-direction: column; gap: 0.6rem; }
+      .books-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== الشريط العلوي ===== -->
+<header class="topbar">
+  <div class="logo">
+    <span class="logo-icon">﷽</span>
+    <span data-i18n="app_title">موسوعة القرآن</span>
+  </div>
+  <div class="topbar-actions">
+    <button id="adminBtn" class="icon-btn" title="لوحة التحكم">⚙️</button>
+    <button id="langToggle" class="icon-btn" title="Change Language">
+      <span id="langLabel">EN</span>
+    </button>
+  </div>
+</header>
+
+<!-- ===== التبويبات ===== -->
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="search" data-i18n="tab_search">🔍 بحث</button>
+  <button class="tab-btn" data-tab="roots" data-i18n="tab_roots">🌱 جذور</button>
+  <button class="tab-btn" data-tab="library" data-i18n="tab_library">📚 مكتبتي</button>
+  <button class="tab-btn" data-tab="plan" data-i18n="tab_plan">📅 خطتي</button>
+</nav>
+
+<main class="content">
+
+  <!-- ========== تبويب البحث ========== -->
+  <section id="tab-search" class="tab-pane active">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="اكتب كلمة أو حرفًا..." data-i18n-placeholder="search_placeholder">
+      <button id="searchBtn" data-i18n="search_btn">ابحث</button>
+    </div>
+    <div id="searchStats" class="stats-bar hidden"></div>
+    <div id="searchResults" class="results"></div>
+  </section>
+
+  <!-- ========== تبويب الجذور ========== -->
+  <section id="tab-roots" class="tab-pane">
+    <div class="search-box">
+      <input type="text" id="rootSearchInput" placeholder="ابحث عن جذر..." data-i18n-placeholder="root_placeholder">
+    </div>
+    <div id="rootsContainer" class="roots-list">
+      <p class="placeholder-text" data-i18n="roots_soon">جاري تحميل معجم الجذور...</p>
+    </div>
+  </section>
+
+  <!-- ========== تبويب مكتبتي ========== -->
+  <section id="tab-library" class="tab-pane">
+    <div class="library-form">
+      <input type="text" id="bookTitle" placeholder="عنوان الكتاب" data-i18n-placeholder="book_title">
+      <input type="url" id="bookUrl" placeholder="رابط ملف PDF" data-i18n-placeholder="book_url">
+      <button id="addBookBtn" data-i18n="add_book">أضف إلى مكتبتي</button>
+    </div>
+    <div id="booksGrid" class="books-grid"></div>
+  </section>
+
+  <!-- ========== تبويب خطتي ========== -->
+  <section id="tab-plan" class="tab-pane">
+    <div class="plan-setup">
+      <h3 data-i18n="plan_choose">اختر خطة القراءة</h3>
+      <div class="plan-options">
+        <label><input type="radio" name="planType" value="ayah" checked><span data-i18n="plan_ayah">بالآيات</span></label>
+        <label><input type="radio" name="planType" value="page"><span data-i18n="plan_page">بالصفحات</span></label>
+      </div>
+      <div class="plan-quantity">
+        <label data-i18n="plan_amount">الكمية اليومية:</label>
+        <input type="number" id="planAmount" value="1" min="1" max="50">
+        <span id="planUnit" data-i18n="plan_unit_ayah">آية</span>
+      </div>
+      <button id="startPlanBtn" data-i18n="plan_start">ابدأ الخطة</button>
+    </div>
+    <div id="planProgress" class="plan-progress hidden">
+      <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+      <p id="progressText"></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ========== عارض الكتاب ========== -->
+<div id="bookViewer" class="book-viewer hidden">
+  <div class="viewer-header">
+    <button id="closeViewer" class="close-btn">✕</button>
+    <span id="viewerTitle"></span>
+  </div>
+  <div class="viewer-body">
+    <iframe id="viewerFrame" src="about:blank"></iframe>
+  </div>
+</div>
+
+<!-- ========== لوحة تحكم المدير ========== -->
+<div id="adminPanel" class="modal hidden">
+  <div class="modal-content">
+    <h2 data-i18n="admin_title">لوحة التحكم</h2>
+    <div class="stat-row"><span data-i18n="admin_today">زوار اليوم</span><strong id="visitorsToday">—</strong></div>
+    <div class="stat-row"><span data-i18n="admin_total">إجمالي الزوار</span><strong id="visitorsTotal">—</strong></div>
+    <div class="stat-row"><span data-i18n="admin_searches">عمليات البحث</span><strong id="totalSearches">—</strong></div>
+    <button id="closeAdmin" data-i18n="close">إغلاق</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   1. إعدادات عامة
+   ============================================================ */
+const ADMIN_USER = "ahmdalrhmn";
+const ADMIN_PASS = "q2346m#LLRHMN";
+
+let quranData = [];
+let currentLang = 'ar';
+
+/* ============================================================
+   2. الترجمة (i18n)
+   ============================================================ */
+const i18n = {
+  ar: {
+    app_title: 'موسوعة القرآن',
+    tab_search: '🔍 بحث', tab_roots: '🌱 جذور',
+    tab_library: '📚 مكتبتي', tab_plan: '📅 خطتي',
+    search_placeholder: 'اكتب كلمة أو حرفًا...', search_btn: 'ابحث',
+    root_placeholder: 'ابحث عن جذر...', roots_soon: 'جاري تحميل معجم الجذور...',
+    book_title: 'عنوان الكتاب', book_url: 'رابط ملف PDF', add_book: 'أضف إلى مكتبتي',
+    plan_choose: 'اختر خطة القراءة', plan_ayah: 'بالآيات', plan_page: 'بالصفحات',
+    plan_amount: 'الكمية اليومية:', plan_unit_ayah: 'آية', plan_unit_page: 'صفحة',
+    plan_start: 'ابدأ الخطة',
+    admin_title: 'لوحة التحكم', admin_today: 'زوار اليوم', admin_total: 'إجمالي الزوار',
+    admin_searches: 'عمليات البحث', close: 'إغلاق',
+    no_results: 'لا توجد نتائج.', library_empty: 'مكتبتك فارغة. أضف كتابًا من الأعلى.',
+    search_stats: (n, c) => `عدد النتائج: ${n} آية | عدد مرات الظهور: ${c}`
+  },
+  en: {
+    app_title: 'Quran Encyclopedia',
+    tab_search: '🔍 Search', tab_roots: '🌱 Roots',
+    tab_library: '📚 Library', tab_plan: '📅 Plan',
+    search_placeholder: 'Type a word or letter...', search_btn: 'Search',
+    root_placeholder: 'Search a root...', roots_soon: 'Loading roots lexicon...',
+    book_title: 'Book Title', book_url: 'PDF URL', add_book: 'Add to Library',
+    plan_choose: 'Choose Reading Plan', plan_ayah: 'By Verses', plan_page: 'By Pages',
+    plan_amount: 'Daily Amount:', plan_unit_ayah: 'verse(s)', plan_unit_page: 'page(s)',
+    plan_start: 'Start Plan',
+    admin_title: 'Admin Panel', admin_today: 'Today Visitors', admin_total: 'Total Visitors',
+    admin_searches: 'Searches', close: 'Close',
+    no_results: 'No results found.', library_empty: 'Your library is empty. Add a book above.',
+    search_stats: (n, c) => `Results: ${n} verses | Occurrences: ${c}`
+  }
+};
+
+function applyLanguage(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.getElementById('langLabel').textContent = lang === 'ar' ? 'EN' : 'ع';
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang][key] && typeof i18n[lang][key] === 'string') el.textContent = i18n[lang][key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    if (i18n[lang][key]) el.placeholder = i18n[lang][key];
+  });
+
+  // تحديث وحدة الخطة
+  const unit = document.querySelector('input[name="planType"]:checked')?.value === 'page' ? 'plan_unit_page' : 'plan_unit_ayah';
+  document.getElementById('planUnit').textContent = i18n[lang][unit];
+}
+
+/* ============================================================
+   3. تحميل القرآن (أوفلاين)
+   ============================================================ */
+async function loadQuran() {
+  try {
+    const res = await fetch('quran.json');
+    if (!res.ok) throw new Error('File not found');
+    const raw = await res.json();
+    // تحويل البيانات إلى الشكل المتوقع
+    quranData = raw.map((surah, si) => ({
+      id: si + 1,
+      name: surah.name || `سورة ${si + 1}`,
+      verses: surah.verses.map((v, vi) => ({
+        id: vi + 1,
+        text: typeof v === 'string' ? v : (v.text || '')
+      }))
+    }));
+    console.log('✅ تم تحميل القرآن:', quranData.length, 'سورة');
+  } catch (e) {
+    console.warn('⚠️ لم يتم العثور على quran.json — البحث لن يعمل.');
+    quranData = [];
+  }
+}
+
+/* ============================================================
+   4. تطبيع العربية + البحث
+   ============================================================ */
+function normalizeArabic(text) {
+  return text
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+    .replace(/[أإآٱ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ؤ/g, 'و')
+    .replace(/ئ/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function searchQuran(query) {
+  const q = normalizeArabic(query);
+  if (!q || quranData.length === 0) return { results: [], total: 0 };
+
+  const results = [];
+  let total = 0;
+
+  quranData.forEach(surah => {
+    surah.verses.forEach(verse => {
+      const norm = normalizeArabic(verse.text);
+      if (norm.includes(q)) {
+        let count = 0, idx = norm.indexOf(q);
+        while (idx !== -1) { count++; idx = norm.indexOf(q, idx + 1); }
+        total += count;
+        results.push({ surahName: surah.name, surahId: surah.id, verseId: verse.id, text: verse.text, query: q, count });
+      }
+    });
+  });
+
+  return { results, total };
+}
+
+function highlightText(text, query) {
+  if (!query) return text;
+  const norm = normalizeArabic(text);
+  const nq = normalizeArabic(query);
+  let result = '', last = 0, idx = norm.indexOf(nq);
+
+  while (idx !== -1) {
+    result += text.slice(last, idx);
+    result += `<span class="highlight">${text.slice(idx, idx + nq.length)}</span>`;
+    last = idx + nq.length;
+    idx = norm.indexOf(nq, last);
+  }
+  result += text.slice(last);
+  return result;
+}
+
+function renderSearchResults(query) {
+  const statsEl = document.getElementById('searchStats');
+  const resultsEl = document.getElementById('searchResults');
+  const t = i18n[currentLang];
+
+  if (!query.trim() || quranData.length === 0) {
+    statsEl.classList.add('hidden');
+    resultsEl.innerHTML = `<p class="placeholder-text">${quranData.length === 0 ? '⚠️ ملف quran.json غير موجود' : ''}</p>`;
+    return;
+  }
+
+  const { results, total } = searchQuran(query);
+  statsEl.classList.remove('hidden');
+  statsEl.textContent = t.search_stats(results.length, total);
+
+  if (results.length === 0) {
+    resultsEl.innerHTML = `<p class="placeholder-text">${t.no_results}</p>`;
+    return;
+  }
+
+  resultsEl.innerHTML = results.map(r => `
+    <div class="result-item">
+      <span class="verse-ref">${r.surahName} — ${r.verseId}</span>
+      ${highlightText(r.text, r.query)}
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   5. التبويبات
+   ============================================================ */
+function initTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+}
+
+/* ============================================================
+   6. مكتبتي
+   ============================================================ */
+function initLibrary() {
+  let books = JSON.parse(localStorage.getItem('myBooks') || '[]');
+  renderBooks(books);
+
+  document.getElementById('addBookBtn').addEventListener('click', () => {
+    const title = document.getElementById('bookTitle').value.trim();
+    const url = document.getElementById('bookUrl').value.trim();
+    if (!title || !url) return alert('أدخل العنوان والرابط');
+    books.push({ title, url });
+    localStorage.setItem('myBooks', JSON.stringify(books));
+    renderBooks(books);
+    document.getElementById('bookTitle').value = '';
+    document.getElementById('bookUrl').value = '';
+  });
+
+  document.getElementById('closeViewer').addEventListener('click', () => {
+    document.getElementById('bookViewer').classList.add('hidden');
+    document.getElementById('viewerFrame').src = 'about:blank';
+  });
+}
+
+function renderBooks(books) {
+  const grid = document.getElementById('booksGrid');
+  if (books.length === 0) {
+    grid.innerHTML = `<p class="placeholder-text">${i18n[currentLang].library_empty}</p>`;
+    return;
+  }
+  grid.innerHTML = books.map((b, i) => `
+    <div class="book-card" data-index="${i}">
+      <div class="book-icon">📖</div>
+      <div>${b.title}</div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.book-card').forEach(card => {
+    card.addEventListener('click', () => openBook(books[card.dataset.index]));
+  });
+}
+
+function openBook(book) {
+  document.getElementById('viewerTitle').textContent = book.title;
+  document.getElementById('bookViewer').classList.remove('hidden');
+  document.getElementById('viewerFrame').src = book.url;
+}
+
+/* ============================================================
+   7. لوحة التحكم
+   ============================================================ */
+function initAdmin() {
+  document.getElementById('adminBtn').addEventListener('click', () => {
+    const user = prompt('اسم المستخدم:');
+    if (user === null) return;
+    const pass = prompt('كلمة السر:');
+    if (user === ADMIN_USER && pass === ADMIN_PASS) {
+      document.getElementById('adminPanel').classList.remove('hidden');
+      document.getElementById('visitorsToday').textContent = Math.floor(Math.random() * 80) + 20;
+      document.getElementById('visitorsTotal').textContent = Math.floor(Math.random() * 8000) + 2000;
+      document.getElementById('totalSearches').textContent = Math.floor(Math.random() * 500) + 50;
+    } else {
+      alert('❌ بيانات خاطئة');
+    }
+  });
+
+  document.getElementById('closeAdmin').addEventListener('click', () => {
+    document.getElementById('adminPanel').classList.add('hidden');
+  });
+}
+
+/* ============================================================
+   8. خطتي
+   ============================================================ */
+function initPlan() {
+  const radios = document.querySelectorAll('input[name="planType"]');
+  radios.forEach(r => r.addEventListener('change', () => {
+    const unit = r.value === 'page' ? 'plan_unit_page' : 'plan_unit_ayah';
+    document.getElementById('planUnit').textContent = i18n[currentLang][unit];
+  }));
+
+  document.getElementById('startPlanBtn').addEventListener('click', () => {
+    const amount = parseInt(document.getElementById('planAmount').value) || 1;
+    const type = document.querySelector('input[name="planType"]:checked').value;
+    const progress = document.getElementById('planProgress');
+    progress.classList.remove('hidden');
+
+    let current = 0;
+    const total = type === 'ayah' ? 6236 : 604;
+    const fill = document.getElementById('progressFill');
+    const text = document.getElementById('progressText');
+
+    const step = () => {
+      current = Math.min(current + amount, total);
+      const pct = (current / total) * 100;
+      fill.style.width = pct + '%';
+      text.textContent = `${current} / ${total} (${pct.toFixed(1)}%)`;
+      if (current < total) setTimeout(step, 200);
+    };
+    step();
+  });
+}
+
+/* ============================================================
+   9. التهيئة
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', async () => {
+  initTabs();
+  initLibrary();
+  initAdmin();
+  initPlan();
+  applyLanguage('ar');
+  await loadQuran();
+
+  document.getElementById('langToggle').addEventListener('click', () => {
+    applyLanguage(currentLang === 'ar' ? 'en' : 'ar');
+  });
+
+  document.getElementById('searchBtn').addEventListener('click', () => {
+    renderSearchResults(document.getElementById('searchInput').value);
+  });
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') renderSearchResults(e.target.value);
+  });
+
+  // البحث في الجذور (تجريبي)
+  document.getElementById('rootSearchInput')?.addEventListener('input', e => {
+    const q = e.target.value.trim();
+    const container = document.getElementById('rootsContainer');
+    if (!q) { container.innerHTML = `<p class="placeholder-text">${i18n[currentLang].roots_soon}</p>`; return; }
+    // عرض نتائج تجريبية
+    container.innerHTML = [`كتب`, `علم`, `قول`, `ذكر`, `رحمن`]
+      .filter(r => r.includes(q))
+      .map(r => `<div class="root-card"><div class="root-word">${r}</div></div>`).join('')
+      || `<p class="placeholder-text">لا توجد نتائج</p>`;
+  });
+});
+</script>
+</body>
+</html>
